@@ -1,0 +1,20 @@
+diff --git a/app/internal_packages/notifications/lib/main.ts b/app/internal_packages/notifications/lib/main.ts
+index 81579fb..bfc5b85 100644
+--- a/app/internal_packages/notifications/lib/main.ts
++++ b/app/internal_packages/notifications/lib/main.ts
+@@ -8,7 +8,6 @@ import AccountErrorNotification from './items/account-error-notif';
+ import DefaultClientNotification from './items/default-client-notif';
+ import UnstableChannelNotification from './items/unstable-channel-notif';
+ import DevModeNotification from './items/dev-mode-notif';
+-import PleaseSubscribeNotification from './items/please-subscribe-notif';
+ import DisabledMailRulesNotification from './items/disabled-mail-rules-notif';
+ import OfflineNotification from './items/offline-notification';
+ import UpdateNotification from './items/update-notification';
+@@ -18,7 +17,6 @@ const notifications = [
+   DefaultClientNotification,
+   UnstableChannelNotification,
+   DevModeNotification,
+-  PleaseSubscribeNotification,
+   DisabledMailRulesNotification,
+   OfflineNotification,
+   UpdateNotification,

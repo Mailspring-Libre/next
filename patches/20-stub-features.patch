@@ -1,0 +1,597 @@
+diff --git a/app/internal_packages/activity/lib/dashboard/share-button.tsx b/app/internal_packages/activity/lib/dashboard/share-button.tsx
+index 1ce5bb2..887639a 100644
+--- a/app/internal_packages/activity/lib/dashboard/share-button.tsx
++++ b/app/internal_packages/activity/lib/dashboard/share-button.tsx
+@@ -1,121 +1,7 @@
+ import React from 'react';
+-import { clipboard } from 'electron';
+-import { localized, MailspringAPIRequest } from 'mailspring-exports';
+-import { RetinaImg } from 'mailspring-component-kit';
+-
+-function buildShareHTML(htmlEl, styleEl) {
+-  return `
+-    <html lang="en">
+-    <head>
+-    <meta charset="utf-8"> 
+-    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+-    <meta name="author" content="Mailspring">
+-    <title>Mailspring Activity</title>
+-    <style type="text/css">
+-    body {
+-      font-family: sans-serif;
+-      font-size: 14px;
+-      margin: 40px auto;
+-      max-width: 1000px;
+-    }
+-    .hidden-on-web {
+-      display: none !important;
+-    }
+-    </style>
+-    ${styleEl.outerHTML}
+-    </head>
+-    <body>
+-    ${htmlEl.outerHTML}
+-    <script>
+-      Array.from(document.querySelectorAll('.visible')).forEach((el) => {
+-        el.classList.remove('visible');
+-        setTimeout(() => {
+-          el.classList.add('visible');
+-        }, 250);
+-      });
+-    </script>
+-    </body>
+-    </html>
+-`;
+-}
+ 
+ export default class ShareButton extends React.Component<{}, { link: string; loading: boolean }> {
+-  _mounted = false;
+-  _linkEl: HTMLInputElement;
+-
+-  constructor(props) {
+-    super(props);
+-    this.state = {
+-      loading: false,
+-      link: null,
+-    };
+-  }
+-
+-  componentDidMount() {
+-    this._mounted = true;
+-  }
+-
+-  componentWillUnmount() {
+-    this._mounted = false;
+-  }
+-
+-  _onShareReport = async () => {
+-    this.setState({
+-      loading: true,
+-    });
+-
+-    const link = await MailspringAPIRequest.postStaticPage({
+-      key: `activity-${Date.now()}`,
+-      html: buildShareHTML(
+-        document.querySelector('style[source-path*="activity/styles/index.less"]'),
+-        document.querySelector('.activity-dashboard')
+-      ),
+-    });
+-    if (!this._mounted) {
+-      return;
+-    }
+-    this.setState(
+-      {
+-        loading: false,
+-        link: link,
+-      },
+-      () => {
+-        if (this._linkEl) {
+-          this._linkEl.setSelectionRange(0, this._linkEl.value.length);
+-          this._linkEl.focus();
+-        }
+-      }
+-    );
+-  };
+-
+   render() {
+-    return (
+-      <div style={{ display: 'flex' }}>
+-        <div className="btn" onClick={this._onShareReport} style={{ minWidth: 150 }}>
+-          {localized('Share this Report')}
+-          {this.state.loading && (
+-            <RetinaImg
+-              name="inline-loading-spinner.gif"
+-              mode={RetinaImg.Mode.ContentDark}
+-              style={{ width: 14, height: 14, marginLeft: 10 }}
+-            />
+-          )}
+-        </div>
+-        {this.state.link && (
+-          <div>
+-            <input
+-              ref={el => (this._linkEl = el)}
+-              type="url"
+-              value={this.state.link}
+-              style={{ width: 300, marginLeft: 10 }}
+-              readOnly
+-            />
+-            <div className="copy-to-clipboard" onClick={() => clipboard.writeText(this.state.link)}>
+-              <RetinaImg name="icon-copytoclipboard.png" mode={RetinaImg.Mode.ContentIsMask} />
+-            </div>
+-          </div>
+-        )}
+-      </div>
+-    );
++    return null;
+   }
+ }
+diff --git a/app/internal_packages/composer-signature/lib/constants.ts b/app/internal_packages/composer-signature/lib/constants.ts
+index 44d2918..1008edf 100644
+--- a/app/internal_packages/composer-signature/lib/constants.ts
++++ b/app/internal_packages/composer-signature/lib/constants.ts
+@@ -105,7 +105,6 @@ export const ResolveSignatureData = data => {
+     const domain =
+       (data.websiteURL && URL.parse(data.websiteURL).hostname) ||
+       (data.email && data.email.split('@').pop());
+-    data.photoURL = `https://logo.getmailspring.com/company-logo/${domain}?msw=128&msh=128`;
+   }
+ 
+   if (data.photoURL === 'custom') {
+diff --git a/app/internal_packages/localizer-help/lib/main.tsx b/app/internal_packages/localizer-help/lib/main.tsx
+index 84d6e41..622e06f 100644
+--- a/app/internal_packages/localizer-help/lib/main.tsx
++++ b/app/internal_packages/localizer-help/lib/main.tsx
+@@ -22,30 +22,7 @@ class SubmitLocalizationsBar extends React.Component {
+   }
+ 
+   onSubmit = async () => {
+-    const { current, suggestion } = this.state;
+-
+-    try {
+-      const { status } = await MailspringAPIRequest.makeRequest({
+-        server: 'identity',
+-        method: 'POST',
+-        body: { current, suggestion, language: window.navigator.language },
+-        path: '/api/localization-suggestion',
+-        json: true,
+-      });
+-      if (status === 'success') {
+-        remote.dialog.showMessageBox({
+-          type: 'info',
+-          buttons: [localized('OK')],
+-          message: localized('Thank you!'),
+-          title: localized('Thank you!'),
+-          detail: localized(
+-            `Your updated localization will be reviewed and included in a future version of Mailspring.`
+-          ),
+-        });
+-      }
+-    } catch (err) {
+-      AppEnv.showErrorDialog(err.toString());
+-    }
++    AppEnv.showErrorDialog("Localization suggestions aren't supported in this build!");
+   };
+ 
+   onSelectionBogusClick = event => {
+@@ -100,48 +77,6 @@ class SubmitLocalizationsBar extends React.Component {
+ 
+     return (
+       <div style={{ background: 'moccasin' }}>
+-        <div
+-          style={{
+-            display: 'flex',
+-            alignItems: 'center',
+-            height: 40,
+-            padding: 10,
+-            borderTop: `1px solid rgba(0,0,0,0.1)`,
+-          }}
+-        >
+-          <span style={{ marginRight: 10, flex: 1, fontWeight: 500 }}>
+-            {localized('Submit Improved Localizations')}
+-          </span>
+-          <button
+-            className="btn"
+-            style={selecting ? { border: '1px solid black' } : {}}
+-            onClick={this.onToggleSelectionMode}
+-          >
+-            <img
+-              alt="icon"
+-              src={'mailspring://localizer-help/assets/choose-element.png'}
+-              style={{ width: 13 }}
+-            />
+-          </button>
+-          <input
+-            type="text"
+-            style={{ flex: 1 }}
+-            value={current}
+-            placeholder={localized('Existing')}
+-            onChange={e => this.setState({ current: e.target.value })}
+-          />
+-          <span style={{ margin: 10 }}>=</span>
+-          <input
+-            type="text"
+-            style={{ flex: 1 }}
+-            value={suggestion}
+-            placeholder={`${localized('Localized')} (${window.navigator.language})`}
+-            onChange={e => this.setState({ suggestion: e.target.value })}
+-          />
+-          <button onClick={this.onSubmit} className="btn" type="submit" style={{ marginLeft: 10 }}>
+-            {localized('Submit')}
+-          </button>
+-        </div>
+         <div
+           style={{
+             display: 'flex',
+diff --git a/app/internal_packages/notifications/lib/items/account-error-notif.tsx b/app/internal_packages/notifications/lib/items/account-error-notif.tsx
+index a4474f9..4dbf516 100644
+--- a/app/internal_packages/notifications/lib/items/account-error-notif.tsx
++++ b/app/internal_packages/notifications/lib/items/account-error-notif.tsx
+@@ -34,18 +34,7 @@ export default class AccountErrorNotification extends React.Component<
+   }
+ 
+   _onContactSupport = erroredAccount => {
+-    let url = 'https://support.getmailspring.com/hc/en-us/requests/new';
+-    if (erroredAccount) {
+-      url += `?email=${encodeURIComponent(erroredAccount.emailAddress)}`;
+-      const { syncError } = erroredAccount;
+-      if (syncError != null) {
+-        url += `&subject=${encodeURIComponent('Sync Error')}`;
+-        const description = encodeURIComponent(
+-          `Sync Error:\n\`\`\`\n${JSON.stringify(syncError, null, 2)}\n\`\`\``
+-        );
+-        url += `&description=${description}`;
+-      }
+-    }
++    let url = 'https://github.com/notpushkin/Mailspring-Libre/issues/new';
+     shell.openExternal(url);
+   };
+ 
+diff --git a/app/internal_packages/notifications/lib/items/unstable-channel-notif.tsx b/app/internal_packages/notifications/lib/items/unstable-channel-notif.tsx
+index 5339af0..4971fdd 100644
+--- a/app/internal_packages/notifications/lib/items/unstable-channel-notif.tsx
++++ b/app/internal_packages/notifications/lib/items/unstable-channel-notif.tsx
+@@ -32,7 +32,9 @@ export default class UnstableChannelNotification extends React.Component<
+   }
+ 
+   _onReportIssue = () => {
+-    AppEnv.windowEventHandler.openLink({ href: 'mailto:support@getmailspring.com' });
++    AppEnv.windowEventHandler.openLink({
++      href: 'https://github.com/notpushkin/Mailspring-Libre/issues/new',
++    });
+   };
+ 
+   render() {
+diff --git a/app/internal_packages/onboarding/lib/newsletter-signup.tsx b/app/internal_packages/onboarding/lib/newsletter-signup.tsx
+index 07904eb..3acc6b3 100644
+--- a/app/internal_packages/onboarding/lib/newsletter-signup.tsx
++++ b/app/internal_packages/onboarding/lib/newsletter-signup.tsx
+@@ -53,104 +53,20 @@ export default class NewsletterSignup extends React.Component<
+   }
+ 
+   _onGetStatus = async (props = this.props) => {
+-    this._setState({ status: 'Pending' });
+-    try {
+-      const { status } = await MailspringAPIRequest.makeRequest({
+-        server: 'identity',
+-        method: 'GET',
+-        path: this._path(props),
+-      });
+-      if (status === 'Never Subscribed') {
+-        this._onSubscribe();
+-      } else {
+-        this._setState({ status });
+-      }
+-    } catch (err) {
+-      this._setState({ status: 'Error' });
+-    }
++    this._setState({ status: 'Unsubscribed' });
+   };
+ 
+   _onSubscribe = async () => {
+-    this._setState({ status: 'Pending' });
+-    try {
+-      const { status } = await MailspringAPIRequest.makeRequest({
+-        server: 'identity',
+-        method: 'POST',
+-        path: this._path(),
+-      });
+-      this._setState({ status });
+-    } catch (err) {
+-      this._setState({ status: 'Error' });
+-    }
++    this._setState({ status: 'Subscribed' });
+   };
+ 
+   _onUnsubscribe = async () => {
+-    this._setState({ status: 'Pending' });
+-    try {
+-      const { status } = await MailspringAPIRequest.makeRequest({
+-        server: 'identity',
+-        method: 'DELETE',
+-        path: this._path(),
+-      });
+-      this._setState({ status });
+-    } catch (err) {
+-      this._setState({ status: 'Error' });
+-    }
++    this._setState({ status: 'Unsubscribed' });
+   };
+ 
+-  _path(props = this.props) {
+-    return `/api/newsletter/first-account/${encodeURIComponent(
+-      props.emailAddress
+-    )}?name=${encodeURIComponent(props.name)}`;
+-  }
+-
+-  _renderControl() {
+-    if (this.state.status === 'Pending') {
+-      return (
+-        <RetinaImg
+-          name="inline-loading-spinner.gif"
+-          mode={RetinaImg.Mode.ContentDark}
+-          style={{ width: 14, height: 14 }}
+-        />
+-      );
+-    }
+-    if (this.state.status === 'Error') {
+-      return (
+-        <button onClick={() => this._onGetStatus()} className="btn">
+-          Retry
+-        </button>
+-      );
+-    }
+-    if (this.state.status === 'Subscribed') {
+-      return (
+-        <input
+-          id="subscribe-check"
+-          type="checkbox"
+-          checked
+-          style={{ marginTop: 3 }}
+-          onChange={this._onUnsubscribe}
+-        />
+-      );
+-    }
+-    return (
+-      <input
+-        id="subscribe-check"
+-        type="checkbox"
+-        checked={false}
+-        style={{ marginTop: 3 }}
+-        onChange={this._onSubscribe}
+-      />
+-    );
+-  }
+-
+   render() {
+     return (
+-      <Flexbox direction="row" height="auto" style={{ textAlign: 'left' }}>
+-        <div style={{ minWidth: 15 }}>{this._renderControl()}</div>
+-        <label htmlFor="subscribe-check" style={{ paddingLeft: 4, flex: 1 }}>
+-          {localized('Notify me about new features and plugins via this email address.')}
+-        </label>
+-      </Flexbox>
++      <Flexbox direction="row" height="auto" style={{ textAlign: 'left' }} />
+     );
+   }
+ }
+diff --git a/app/internal_packages/translation/lib/service.ts b/app/internal_packages/translation/lib/service.ts
+index 83e8487..9d0b7a9 100644
+--- a/app/internal_packages/translation/lib/service.ts
++++ b/app/internal_packages/translation/lib/service.ts
+@@ -235,14 +235,7 @@ export async function translateMessageBody(
+ 
+     let response = null;
+     try {
+-      response = await MailspringAPIRequest.makeRequest({
+-        server: 'identity',
+-        method: 'POST',
+-        path: `/api/translate`,
+-        json: true,
+-        body: { lang: targetLang, text: translationHTML, format: 'html' },
+-        timeout: 5000,
+-      });
++      throw new Error('Not supported in this build :(');
+     } catch (error) {
+       Actions.closePopover();
+       if (!silent) {
+diff --git a/app/src/components/evented-iframe.tsx b/app/src/components/evented-iframe.tsx
+index 655a02f..f709573 100644
+--- a/app/src/components/evented-iframe.tsx
++++ b/app/src/components/evented-iframe.tsx
+@@ -218,16 +218,6 @@ export class EventedIFrame extends React.Component<
+ 
+       e.preventDefault();
+ 
+-      // If this is a link to our billing site, attempt single sign on instead of
+-      // just following the link directly
+-      if (rawHref.startsWith(rootURLForServer('identity'))) {
+-        const path = rawHref.split(rootURLForServer('identity')).pop();
+-        IdentityStore.fetchSingleSignOnURL(path, { source: 'SingleSignOnEmail' }).then(href => {
+-          AppEnv.windowEventHandler.openLink({ href, metaKey: e.metaKey });
+-        });
+-        return;
+-      }
+-
+       // It's important to send the raw `href` here instead of the target.
+       // The `target` comes from the document context of the iframe, which
+       // as of Electron 0.36.9, has different constructor function objects
+diff --git a/app/src/components/webview.tsx b/app/src/components/webview.tsx
+index 21617fd..a7549cb 100644
+--- a/app/src/components/webview.tsx
++++ b/app/src/components/webview.tsx
+@@ -7,7 +7,6 @@ import classnames from 'classnames';
+ import networkErrors from 'chromium-net-errors';
+ import { localized } from 'mailspring-exports';
+ 
+-import { rootURLForServer } from '../flux/mailspring-api-request';
+ import { RetinaImg } from './retina-img';
+ import { Disposable } from 'event-kit';
+ 
+@@ -56,7 +55,7 @@ class InitialLoadingCover extends React.Component<
+     if (this.props.error) {
+       message = this.props.error;
+     } else if (this.state.slow) {
+-      message = localized(`Still trying to reach %@…`, rootURLForServer('identity'));
++      message = localized(`Still trying to reach %@…`, "identity server (please report this on GitHub)");
+     } else {
+       message = '&nbsp;';
+     }
+diff --git a/app/src/flux/mailspring-api-request.ts b/app/src/flux/mailspring-api-request.ts
+index 9ddde45..002cc98 100644
+--- a/app/src/flux/mailspring-api-request.ts
++++ b/app/src/flux/mailspring-api-request.ts
+@@ -40,92 +40,21 @@ export function rootURLForServer(server) {
+   }
+ 
+   if (server === 'identity') {
+-    return {
+-      development: 'http://localhost:5101',
+-      staging: 'https://id-staging.getmailspring.com',
+-      production: 'https://id.getmailspring.com',
+-    }[env];
++    return "http://0.0.0.0/";
+   }
+   throw new Error('rootURLForServer: You must provide a valid `server` value');
+ }
+ 
+ export async function postStaticAsset({ filename, blob }) {
+-  const body = new FormData();
+-  body.set('filename', filename);
+-  if (typeof blob === 'string') {
+-    body.set('file', new Blob([blob], { type: 'text/plain' }), filename);
+-  } else {
+-    body.set('file', blob, filename);
+-  }
+-  const resp = await makeRequest({
+-    server: 'identity',
+-    method: 'POST',
+-    path: `/api/save-public-asset`,
+-    body: body,
+-  });
+-  return resp.link;
++  return "Not supported (please report this on GitHub)";
+ }
+ 
+ export async function postStaticPage({ html, key }) {
+-  const json = await makeRequest({
+-    server: 'identity',
+-    method: 'POST',
+-    path: '/api/share-static-page',
+-    json: true,
+-    body: { key, html },
+-    timeout: 1500,
+-  });
+-  return json.link;
++  throw new Error("Not supported (please report this on GitHub)");
+ }
+ 
+ export async function makeRequest(options) {
+-  // for some reason when `fetch` completes, the stack trace has been lost.
+-  // In case the request failsm capture the stack now.
+-  const root = rootURLForServer(options.server);
+-
+-  options.headers = options.headers || new Headers();
+-  options.headers.set('Accept', 'application/json');
+-  options.credentials = 'include';
+-
+-  if (!options.auth && options.auth !== false) {
+-    if (options.server === 'identity') {
+-      IdentityStore = IdentityStore || require('./stores/identity-store').IdentityStore;
+-      const username = IdentityStore.identity().token;
+-      options.headers.set('Authorization', `Basic ${btoa(`${username}:`)}`);
+-    }
+-  }
+-
+-  if (options.path) {
+-    options.url = `${root}${options.path}`;
+-  }
+-
+-  if (options.body && !(options.body instanceof FormData)) {
+-    options.headers.set('Content-Type', 'application/json');
+-    options.body = JSON.stringify(options.body);
+-  }
+-
+-  const desc = `${options.method || 'GET'} ${options.url}`;
+-  const error = new APIError(`${desc} failed`);
+-  let resp = null;
+-  try {
+-    resp = await fetch(options.url, options);
+-  } catch (uselessFetchError) {
+-    // TypeError: Failed to fetch when user is offline, with no stack trace.
+-    throw error;
+-  }
+-  if (!resp.ok) {
+-    error.statusCode = resp.status;
+-    error.message = `${desc} returned ${resp.status} ${resp.statusText}`;
+-    throw error;
+-  }
+-  try {
+-    return resp.json();
+-  } catch (invalidJSONError) {
+-    // We need to wrap this generic JSON error into our APIError class to attach the request
+-    // description and also to prevent it from being reported to Sentry 7,000 times a month.
+-    error.message = `${desc} returned invalid JSON: ${invalidJSONError.toString()}`;
+-    throw error;
+-  }
++  throw new Error("Not supported (please report this on GitHub)");
+ }
+ 
+ export default {
+diff --git a/app/src/flux/stores/update-channel-store.ts b/app/src/flux/stores/update-channel-store.ts
+index 5c6acdd..7e80a93 100644
+--- a/app/src/flux/stores/update-channel-store.ts
++++ b/app/src/flux/stores/update-channel-store.ts
+@@ -29,47 +29,15 @@ class UpdateChannelStore extends MailspringStore {
+   }
+ 
+   async refreshChannel() {
+-    // TODO BG
+-    try {
+-      const { current, available } = await makeRequest({
+-        server: 'identity',
+-        method: 'GET',
+-        path: `/api/update-channel`,
+-        qs: Object.assign({ preferredChannel: preferredChannel }, autoUpdater.parameters()),
+-        json: true,
+-      });
+-      this._current = current || { name: 'Channel API Not Available' };
+-      this._available = available || [];
+-      this.trigger();
+-    } catch (err) {
+-      // silent
+-    }
+-    return;
++    this._current = { name: 'Builtin updater disabled in this build' };
++    this._available = [];
++    this.trigger();
+   }
+ 
+   async setChannel(channelName) {
+-    try {
+-      const { current, available } = await makeRequest({
+-        server: 'identity',
+-        method: 'POST',
+-        path: `/api/update-channel`,
+-        qs: Object.assign(
+-          {
+-            channel: channelName,
+-            preferredChannel: preferredChannel,
+-          },
+-          autoUpdater.parameters()
+-        ),
+-        json: true,
+-      });
+-      this._current = current || { name: 'Channel API Not Available' };
+-      this._available = available || [];
+-      this.trigger();
+-    } catch (err) {
+-      AppEnv.showErrorDialog(err.toString());
+-      this.trigger();
+-    }
+-    return null;
++    this._current = { name: 'Builtin updater disabled in this build' };
++    this._available = [];
++    this.trigger();
+   }
+ }
+ 

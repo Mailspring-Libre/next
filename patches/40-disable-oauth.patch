@@ -1,0 +1,79 @@
+diff --git a/app/internal_packages/onboarding/lib/account-providers.tsx b/app/internal_packages/onboarding/lib/account-providers.tsx
+index 5bef8dd..ffc8fe9 100644
+--- a/app/internal_packages/onboarding/lib/account-providers.tsx
++++ b/app/internal_packages/onboarding/lib/account-providers.tsx
+@@ -4,6 +4,17 @@ const AccountProviders = [
+   {
+     provider: 'gmail',
+     displayName: 'Gmail or G Suite',
++    note: (
++      <span>
++        <strong>{localized('Important')}:</strong>{' '}
++        {localizedReactFragment(
++          'We recommend that you create a unique app password for email apps like Mailspring. Follow %@ to create one and then paste it below.',
++          <a href="https://support.google.com/accounts/answer/185833?hl=en">
++            {localized('these instructions')}
++          </a>
++        )}
++      </span>
++    ),
+     icon: 'ic-settings-account-gmail.png',
+     headerIcon: 'setup-icon-provider-gmail.png',
+     color: '#FFFFFF00',
+@@ -11,6 +22,17 @@ const AccountProviders = [
+   {
+     provider: 'office365',
+     displayName: 'Office 365',
++    note: (
++      <span>
++        <strong>{localized('Important')}:</strong>{' '}
++        {localizedReactFragment(
++          'We recommend that you create a unique app password for email apps like Mailspring. Follow %@ to create one and then paste it below.',
++          <a href="https://docs.microsoft.com/en-us/azure/active-directory/user-help/multi-factor-authentication-end-user-app-passwords">
++            {localized('these instructions')}
++          </a>
++        )}
++      </span>
++    ),
+     icon: 'ic-settings-account-office365.png',
+     headerIcon: 'setup-icon-provider-office365.png',
+     color: '#D83B01',
+@@ -69,7 +91,7 @@ const AccountProviders = [
+       <span>
+         <strong>{localized('Important')}:</strong>{' '}
+         {localizedReactFragment(
+-          'FastMail requires that you create a unique app password of type IMAP for email apps like Mailspring. Follow %@ to create one and then paste it below.',
++          'FastMail requires that you create a unique app password of type IMAP for email apps like Mailspring. Please select the IMAP protocol. Follow %@ to create one and then paste it below.',
+           <a
+             style={{ fontWeight: 600 }}
+             href="https://www.fastmail.com/help/clients/apppassword.html"
+diff --git a/app/internal_packages/onboarding/lib/onboarding-store.ts b/app/internal_packages/onboarding/lib/onboarding-store.ts
+index 61742da..cde1a05 100644
+--- a/app/internal_packages/onboarding/lib/onboarding-store.ts
++++ b/app/internal_packages/onboarding/lib/onboarding-store.ts
+@@ -34,9 +34,9 @@ class OnboardingStore extends MailspringStore {
+       // to the best page with the most details
+       this._account = new Account({}).fromJSON(existingAccountJSON);
+       if (this._account.provider === 'gmail') {
+-        this._pageStack = ['account-choose', 'account-settings-gmail'];
++        this._pageStack = ['account-choose', 'account-settings'];
+       } else if (this._account.provider === 'office365') {
+-        this._pageStack = ['account-choose', 'account-settings-o365'];
++        this._pageStack = ['account-choose', 'account-settings'];
+       } else if (this._account.provider === 'imap') {
+         this._pageStack = ['account-choose', 'account-settings', 'account-settings-imap'];
+       } else {
+@@ -73,12 +73,7 @@ class OnboardingStore extends MailspringStore {
+   };
+ 
+   _onChooseAccountProvider = provider => {
+-    const nextPage =
+-      provider === 'gmail'
+-        ? 'account-settings-gmail'
+-        : provider === 'office365'
+-        ? 'account-settings-o365'
+-        : 'account-settings';
++    const nextPage = 'account-settings';
+ 
+     // Don't carry over any type-specific account information
+     this._onSetAccount(

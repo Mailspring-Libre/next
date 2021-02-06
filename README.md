@@ -8,6 +8,7 @@ Usage:
 sudo apt install ripgrep moreutils build-essential clang libx11-dev libxkbfile-dev \
                  execstack fakeroot g++-4.8 git libgnome-keyring-dev libgconf-2-4 \
                  libsecret-1-dev xvfb rpm libxext-dev libxtst-dev libxkbfile-dev curl
+yarn
 bash build.sh
 ```
 

@@ -1,4 +1,4 @@
-# REF="1.8.0"
+REF="1.8.0"
 
 git clone --depth 1 -b "${REF}" "https://github.com/Foundry376/Mailspring" "src"
 cd src
@@ -6,6 +6,11 @@ cd src
 # Remove unsupported packages:
 rm -r app/internal_packages/{link-tracking,open-tracking,thread-sharing,participant-profile}
 
+
+for patch in ../patches/*.js; do
+  echo "Applying ${patch}..."
+  node "${patch}"
+done
 
 for patch in ../patches/*.patch; do
   echo "Applying ${patch}..."

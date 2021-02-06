@@ -4,7 +4,7 @@ import { b, x } from "code-red";
 import babelParser from "@babel/parser";
 import { readFileSync, writeFileSync } from "fs";
 
-const FILE_PATH = "./src/app/internal_packages/onboarding/lib/page-authenticate.tsx";
+const FILE_PATH = "./app/internal_packages/onboarding/lib/page-authenticate.tsx";
 
 const SRC_METHOD_RETURN_VALUE = `data:text/html,
 <div style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center">
@@ -66,86 +66,80 @@ const srcMethodBody = esquery(
   tree,
   "ClassDeclaration[id.name='AuthenticatePage'] ClassMethod[key.name='_src'] > BlockStatement"
 )[0];
-srcMethodBody.body = [
-  {
-    type: "ReturnStatement",
-    argument: {
-      type: "StringLiteral",
-      value: SRC_METHOD_RETURN_VALUE,
-    },
-  },
-];
+srcMethodBody.body = b`
+  return ${{
+    type: "StringLiteral",
+    value: SRC_METHOD_RETURN_VALUE,
+  }};
+`;
 
 const onDidFinishLoadMethodBody = esquery(
   tree,
   "ClassDeclaration[id.name='AuthenticatePage'] ClassProperty[key.name='_onDidFinishLoad'] > ArrowFunctionExpression > BlockStatement"
 )[0];
-onDidFinishLoadMethodBody.body = [
-  {
-    type: "ExpressionStatement",
-    expression: x`OnboardingActions.identityJSONReceived({
-      "id": "ffffffff-ffff-ffff-ffff-ffffffffffff",
-      "token": "ffffffff-ffff-ffff-ffff-fffffffffff",
-      "firstName": "",
-      "lastName": "",
-      "emailAddress": "",
-      "object": "identity",
-      "createdAt": "2020-01-24T18:41:25.000Z",
-      "stripePlan": "Basic",
-      "stripePlanEffective": "Basic",
-      "stripeCustomerId": "cus_Gbkb1jjCVyCu1W",
-      "stripePeriodEnd": null,
-      "featureUsage": {
-        "snooze": {
-          "quota": 15,
-          "period": "weekly",
-          "usedInPeriod": 0,
-          "featureLimitName": "basic-limit"
-        },
-        "send-later": {
-          "quota": 5,
-          "period": "weekly",
-          "usedInPeriod": 0,
-          "featureLimitName": "basic-limit"
-        },
-        "thread-sharing": {
-          "quota": 3,
-          "period": "weekly",
-          "usedInPeriod": 0,
-          "featureLimitName": "basic-limit"
-        },
-        "link-tracking": {
-          "quota": 5,
-          "period": "weekly",
-          "usedInPeriod": 0,
-          "featureLimitName": "basic-limit"
-        },
-        "open-tracking": {
-          "quota": 5,
-          "period": "weekly",
-          "usedInPeriod": 0,
-          "featureLimitName": "basic-limit"
-        },
-        "contact-profiles": {
-          "quota": 3,
-          "period": "weekly",
-          "usedInPeriod": 0,
-          "featureLimitName": "basic-limit"
-        },
-        "send-reminders": {
-          "quota": 5,
-          "period": "weekly",
-          "usedInPeriod": 0,
-          "featureLimitName": "basic-limit"
-        },
-        "translation": {
-          "quota": 50,
-          "period": "weekly",
-          "usedInPeriod": 0,
-          "featureLimitName": "basic-limit"
-        }
+onDidFinishLoadMethodBody.body = b`
+  OnboardingActions.identityJSONReceived({
+    "id": "ffffffff-ffff-ffff-ffff-ffffffffffff",
+    "token": "ffffffff-ffff-ffff-ffff-fffffffffff",
+    "firstName": "",
+    "lastName": "",
+    "emailAddress": "",
+    "object": "identity",
+    "createdAt": "2020-01-24T18:41:25.000Z",
+    "stripePlan": "Basic",
+    "stripePlanEffective": "Basic",
+    "stripeCustomerId": "cus_Gbkb1jjCVyCu1W",
+    "stripePeriodEnd": null,
+    "featureUsage": {
+      "snooze": {
+        "quota": 15,
+        "period": "weekly",
+        "usedInPeriod": 0,
+        "featureLimitName": "basic-limit"
+      },
+      "send-later": {
+        "quota": 5,
+        "period": "weekly",
+        "usedInPeriod": 0,
+        "featureLimitName": "basic-limit"
+      },
+      "thread-sharing": {
+        "quota": 3,
+        "period": "weekly",
+        "usedInPeriod": 0,
+        "featureLimitName": "basic-limit"
+      },
+      "link-tracking": {
+        "quota": 5,
+        "period": "weekly",
+        "usedInPeriod": 0,
+        "featureLimitName": "basic-limit"
+      },
+      "open-tracking": {
+        "quota": 5,
+        "period": "weekly",
+        "usedInPeriod": 0,
+        "featureLimitName": "basic-limit"
+      },
+      "contact-profiles": {
+        "quota": 3,
+        "period": "weekly",
+        "usedInPeriod": 0,
+        "featureLimitName": "basic-limit"
+      },
+      "send-reminders": {
+        "quota": 5,
+        "period": "weekly",
+        "usedInPeriod": 0,
+        "featureLimitName": "basic-limit"
+      },
+      "translation": {
+        "quota": 50,
+        "period": "weekly",
+        "usedInPeriod": 0,
+        "featureLimitName": "basic-limit"
       }
-    })`,
-  },
-];
+    }
+  });
+`;
 writeFileSync(FILE_PATH, recast.print(tree).code);
